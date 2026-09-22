@@ -75,9 +75,10 @@ DualChannelSpeeds Kinematics::computeDualChannel(int16_t lx,
     // 1. Apply deadzones
     applyDeadzone(lx, ly, rx, config.deadzone);
 
-    // 2. Apply axis inversions
+    // 2. Apply axis inversions (supports steering on Right Stick RX or Left Stick LX)
+    int16_t turn_input = (abs32(rx) >= abs32(lx)) ? rx : lx;
     int32_t vy = config.invert_ly ? -ly : ly;
-    int32_t omega = config.invert_rx ? -rx : rx;
+    int32_t omega = config.invert_rx ? -turn_input : turn_input;
 
     // 3. Compute 2-channel differential drive:
     // Left channel  = vy + omega

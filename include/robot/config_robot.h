@@ -36,7 +36,7 @@
 #define MOTOR_MAX_ALLOWED_SPEED 1000    // Top speed limit (1000 = 100%)
 
 // Kinematics and Joystick Deadzones
-#define JOYSTICK_DEADZONE       80      // 8% deadzone (80 / 1000)
+#define JOYSTICK_DEADZONE       120     // 12% deadzone (120 / 1000) prevents stick drift
 
 // Axis Inversions (calibrate according to stick polarities)
 #define INVERT_AXIS_LX          false   // Invert strafe axis (Left Stick X)
