@@ -95,6 +95,11 @@ void FailsafeManager::checkTimeout(uint32_t now_ms) {
     }
 }
 
+void FailsafeManager::onControllerDisconnected() {
+    LOG_WARN(TAG, "Controller connection lost. Entering WAITING_FOR_CONTROLLER state. Motors safely stopped.");
+    transitionTo(STATE_WAITING_FOR_CONTROLLER);
+}
+
 void FailsafeManager::triggerEmergencyStop() {
     LOG_ERROR(TAG, "Manual Emergency Stop triggered!");
     transitionTo(STATE_EMERGENCY_STOP);

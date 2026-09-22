@@ -67,6 +67,7 @@ void test_kinematics() {
     cfg.deadzone     = 80; // 8%
     cfg.linear_scale = 1000;
     cfg.turn_scale   = 1000;
+    cfg.expo_percent = 0;
     cfg.invert_lx    = false;
     cfg.invert_ly    = false;
     cfg.invert_rx    = false;
@@ -87,16 +88,11 @@ void test_kinematics() {
                 "Dual Channel Pure Forward: Ch1=+1000, Ch2=+1000");
 
     // 2. Pure Strafe Right (LX = +1000, LY = 0, RX = 0)
-    // front_left = ly + lx + rx = 1000
-    // front_right = ly - lx - rx = -1000
-    // rear_left = ly - lx + rx = -1000
-    // rear_right = ly + lx - rx = 1000
     MecanumWheelSpeeds m_strafe = Kinematics::computeMecanum(1000, 0, 0, cfg);
     TEST_ASSERT(m_strafe.fl == 1000 && m_strafe.fr == -1000 && m_strafe.rl == -1000 && m_strafe.rr == 1000,
                 "Mecanum Pure Strafe Right: FL=+1000, FR=-1000, RL=-1000, RR=+1000");
 
     // 3. Pure Rotate CW (RX = +1000, LY = 0, LX = 0)
-    // front_left = +1000, front_right = -1000, rear_left = +1000, rear_right = -1000
     MecanumWheelSpeeds m_rot = Kinematics::computeMecanum(0, 0, 1000, cfg);
     TEST_ASSERT(m_rot.fl == 1000 && m_rot.fr == -1000 && m_rot.rl == 1000 && m_rot.rr == -1000,
                 "Mecanum Pure Rotate CW: Left side +1000, Right side -1000");
@@ -106,7 +102,6 @@ void test_kinematics() {
                 "Dual Channel Pure Rotate CW: Ch1=+1000, Ch2=-1000");
 
     // 4. Combined Movement with Proportional Scaling (LY = +1000, RX = +1000)
-    // raw: left = 2000, right = 0 -> normalized: left = 1000, right = 0
     DualChannelSpeeds d_comb = Kinematics::computeDualChannel(0, 1000, 1000, cfg);
     TEST_ASSERT(d_comb.ch1_left == 1000 && d_comb.ch2_right == 0,
                 "Dual Channel Normalized Combined (Fwd+Turn): Ch1=+1000, Ch2=0");
@@ -115,7 +110,29 @@ void test_kinematics() {
     MecanumWheelSpeeds m_dz = Kinematics::computeMecanum(50, 40, 60, cfg);
     TEST_ASSERT(m_dz.fl == 0 && m_dz.fr == 0 && m_dz.rl == 0 && m_dz.rr == 0,
                 "Deadzone filtering suppresses sub-threshold stick noise to 0");
+
+    // 6. Exponential Smoothing Curve
+    int16_t zero_expo = Kinematics::applyExpo(0, 30);
+    int16_t full_expo = Kinematics::applyExpo(1000, 30);
+    int16_t mid_expo = Kinematics::applyExpo(500, 30);
+    TEST_ASSERT(zero_expo == 0, "applyExpo(0) == 0");
+    TEST_ASSERT(full_expo == 1000, "applyExpo(1000) == 1000 (preserves max range)");
+    TEST_ASSERT(mid_expo < 500 && mid_expo > 0, "applyExpo softens center stick deflection");
+
+    // 7. Tuned Soccerbot Config Speed Scaling (38% Linear, 26% Turn)
+    KinematicsConfig bot_cfg = cfg;
+    bot_cfg.linear_scale = 380;
+    bot_cfg.turn_scale   = 260;
+    bot_cfg.expo_percent = 30;
+    DualChannelSpeeds tuned_fwd = Kinematics::computeDualChannel(0, 1000, 0, bot_cfg);
+    TEST_ASSERT(tuned_fwd.ch1_left == 380 && tuned_fwd.ch2_right == 380,
+                "Tuned Forward Speed capped at 380 (38%)");
+
+    DualChannelSpeeds tuned_turn = Kinematics::computeDualChannel(0, 0, 1000, bot_cfg);
+    TEST_ASSERT(tuned_turn.ch1_left == 260 && tuned_turn.ch2_right == -260,
+                "Tuned Turn Speed capped at 260 (26%)");
 }
+
 
 void test_failsafe_state_machine() {
     printf("\n--- Running Failsafe State Machine Tests ---\n");

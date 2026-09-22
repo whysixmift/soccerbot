@@ -5,8 +5,9 @@
 
 struct KinematicsConfig {
     int16_t deadzone;     // Deadzone threshold (e.g. 120 for 12% on -1000..+1000 scale)
-    int16_t linear_scale; // Max linear speed scale (e.g. 600 for 60%)
-    int16_t turn_scale;   // Max rotation speed scale (e.g. 450 for 45%)
+    int16_t linear_scale; // Max linear speed scale (e.g. 380 for 38%)
+    int16_t turn_scale;   // Max rotation speed scale (e.g. 260 for 26%)
+    uint8_t expo_percent; // Exponential response curve (0 = linear, 30 = smooth progressive)
     bool invert_lx;       // Invert strafe (LX)
     bool invert_ly;       // Invert forward/back (LY)
     bool invert_rx;       // Invert rotation (RX)
@@ -57,4 +58,14 @@ public:
      * @brief Applies radial and rotational deadzone filtering to input axes.
      */
     static void applyDeadzone(int16_t& lx, int16_t& ly, int16_t& rx, int16_t deadzone);
+
+    /**
+     * @brief Applies exponential smoothing curve for fine micro-control around center stick.
+     *
+     * @param input Normalized input [-1000, +1000]
+     * @param expo_percent Percentage of cubic curve (0..100)
+     * @return int16_t Smoothed value [-1000, +1000]
+     */
+    static int16_t applyExpo(int16_t input, uint8_t expo_percent);
 };
+

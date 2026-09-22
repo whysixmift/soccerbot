@@ -17,8 +17,9 @@
 
 // Controller Watchdog Timeout (ms)
 // If no controller update is received within this time, motors immediately stop.
+// 350ms provides resilience against 2.4GHz RF packet drops while ensuring rapid safety cutoff
 #ifndef CONTROLLER_TIMEOUT_MS
-#define CONTROLLER_TIMEOUT_MS   150
+#define CONTROLLER_TIMEOUT_MS   350
 #endif
 
 // Optional Target DualShock 4 Controller Bluetooth MAC Allow-list
@@ -35,27 +36,35 @@
 // Motor Speed Limits (-1000 to +1000 range)
 #define MOTOR_MAX_ALLOWED_SPEED 1000    // Top speed limit (1000 = 100%)
 
-// Kinematics and Joystick Deadzones
-#define JOYSTICK_DEADZONE       120     // 12% deadzone (120 / 1000) prevents stick drift
+// Acceleration & Deceleration Slew Rate Limiter (Speed units per second)
+// Eliminates jerky movements ("kaku"), wheel slip, and inductive back-EMF spikes
+#define MOTOR_ACCEL_RAMP_RATE   2000    // Smooth acceleration (0 to 380 in ~190ms)
+#define MOTOR_DECEL_RAMP_RATE   3000    // Responsive braking (380 to 0 in ~125ms)
+
+// Kinematics and Joystick Deadzones (Tuned for ultra-fast, zero-latency response)
+#define JOYSTICK_DEADZONE       60      // 6% deadzone: immediate stick engagement without drift
+#define JOYSTICK_EXPO_PERCENT   0       // 0% expo: direct 1:1 instantaneous linear response (zero lag)
 
 // Speed and Sensitivity Scaling (0 to 1000 range)
-#define LINEAR_SPEED_SCALE      600     // 60% max forward/backward speed (smooth, controllable drive)
-#define TURN_SPEED_SCALE        450     // 45% max rotation speed (eliminates wild spinning)
+#define LINEAR_SPEED_SCALE      400     // 40% standard cruising speed
+#define TURN_SPEED_SCALE        320     // 32% crisp turning speed
+#define BOOST_LINEAR_SPEED_SCALE 1000   // 100% full power when R2 / Boost is pulled
+#define BOOST_TURN_SPEED_SCALE   600    // 60% high-speed turning in Boost mode
 
-// Axis Inversions (calibrate according to stick polarities)
-#define INVERT_AXIS_LX          false   // Invert strafe axis (Left Stick X)
-#define INVERT_AXIS_LY          true    // Invert forward/back axis (Left Stick Y: stick forward = robot forward)
-#define INVERT_AXIS_RX          false   // Invert rotation axis (Right Stick X)
+// Axis Inversions (Standard reference frame: Stick UP = +1000, Stick RIGHT = +1000)
+#define INVERT_AXIS_LX          false   // Left Stick X (Strafe)
+#define INVERT_AXIS_LY          false   // Left Stick Y (Forward/Backward)
+#define INVERT_AXIS_RX          false   // Right Stick X (Rotation)
 
 // Motor Channel Inversions (Physical orientation calibration)
-// In a 2-wheel differential chassis, left and right motors are physically mounted facing opposite directions.
-// Setting INVERT_CH2_RIGHT = true aligns both wheels so that positive linear velocity drives both wheels forward.
+// In a 2-wheel differential chassis, motors face opposite directions.
+// Setting CH1 (Left) = true and CH2 (Right) = false aligns forward rotation with forward joystick.
 #ifndef INVERT_CH1_LEFT
-#define INVERT_CH1_LEFT         false
+#define INVERT_CH1_LEFT         true
 #endif
 
 #ifndef INVERT_CH2_RIGHT
-#define INVERT_CH2_RIGHT        true
+#define INVERT_CH2_RIGHT        false
 #endif
 
 // Mecanum Individual Wheel Inversions (if used in 4-wheel kinematics)
@@ -68,3 +77,4 @@
 #define MOTOR_TEST_ON_BOOT      false   // MUST be false for safety
 #define MOTOR_TEST_SAFE_DUTY    200     // ~20% PWM for bench testing
 #define MOTOR_TEST_STEP_MS      1000    // 1 second per phase
+

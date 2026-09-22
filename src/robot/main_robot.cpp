@@ -1,6 +1,7 @@
 #ifdef TARGET_ROBOT
 
 #include <Arduino.h>
+#include <WiFi.h>
 #include "common/logging.h"
 #include "common/protocol.h"
 #include "robot/config_robot.h"
@@ -88,6 +89,9 @@ static void handleSerialCommands() {
 }
 
 void setup() {
+    // Explicitly shut down WiFi radio to dedicate 100% of RF frontend and antenna time-slices to Bluetooth Classic
+    WiFi.mode(WIFI_OFF);
+
     // 1. Initialize Serial communication for telemetry (UART0 on standard pins)
     // GPIO16/GPIO17 are strictly reserved for motor control and NEVER assigned to UART
     Serial.begin(115200);
@@ -99,6 +103,7 @@ void setup() {
     s_kinematics_cfg.deadzone     = JOYSTICK_DEADZONE;
     s_kinematics_cfg.linear_scale = LINEAR_SPEED_SCALE;
     s_kinematics_cfg.turn_scale   = TURN_SPEED_SCALE;
+    s_kinematics_cfg.expo_percent = JOYSTICK_EXPO_PERCENT;
     s_kinematics_cfg.invert_lx    = INVERT_AXIS_LX;
     s_kinematics_cfg.invert_ly    = INVERT_AXIS_LY;
     s_kinematics_cfg.invert_rx    = INVERT_AXIS_RX;
@@ -113,7 +118,9 @@ void setup() {
     bool motor_ok = s_motor_ctrl.init(HARDWARE_PINS,
                                      INVERT_CH1_LEFT,
                                      INVERT_CH2_RIGHT,
-                                     MOTOR_MAX_ALLOWED_SPEED);
+                                     MOTOR_MAX_ALLOWED_SPEED,
+                                     MOTOR_ACCEL_RAMP_RATE,
+                                     MOTOR_DECEL_RAMP_RATE);
     if (!motor_ok) {
         LOG_ERROR(TAG, "CRITICAL: Motor initialization failed! Halting.");
         while (1) { delay(1000); }
@@ -144,15 +151,32 @@ void loop() {
     // 3. Evaluate safety watchdog / failsafe state machine
     s_failsafe.checkTimeout(now);
 
-    // 4. Update motor outputs
+    // 4. Update motor outputs & smooth ramping
     if (s_motor_ctrl.isMotorTestRunning()) {
         s_motor_ctrl.updateMotorTest(now);
     } else if (s_failsafe.isActive() && s_bp32_rx.isConnected()) {
         GamepadData data;
         if (s_bp32_rx.getLatestInput(&data) && data.connected) {
+            // Full power boost via R2 trigger (analog throttle 0..255) or Square button
+            if (data.kick > 10) {
+                // Progressive full throttle boost on R2 squeeze up to 1000 (100% full power)
+                int32_t r2_factor = (int32_t)data.kick;
+                s_kinematics_cfg.linear_scale = (int16_t)(LINEAR_SPEED_SCALE + ((1000 - LINEAR_SPEED_SCALE) * r2_factor) / 255);
+                s_kinematics_cfg.turn_scale   = (int16_t)(TURN_SPEED_SCALE + ((600 - TURN_SPEED_SCALE) * r2_factor) / 255);
+            } else if (data.buttons & BTN_BOOST_MODE) {
+                // Instant 100% full power boost on Square button
+                s_kinematics_cfg.linear_scale = 1000;
+                s_kinematics_cfg.turn_scale   = 600;
+            } else {
+                // Standard smooth cruising speed
+                s_kinematics_cfg.linear_scale = LINEAR_SPEED_SCALE;
+                s_kinematics_cfg.turn_scale   = TURN_SPEED_SCALE;
+            }
+
             DualChannelSpeeds speeds = Kinematics::computeDualChannel(data.lx, data.ly, data.rx, s_kinematics_cfg);
             s_motor_ctrl.setSpeeds(speeds.ch1_left, speeds.ch2_right);
         }
+        s_motor_ctrl.update(now);
     } else {
         s_motor_ctrl.stopAll();
     }

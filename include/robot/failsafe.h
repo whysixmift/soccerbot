@@ -35,6 +35,12 @@ public:
     void checkTimeout(uint32_t now_ms);
 
     /**
+     * @brief Called when the controller disconnects cleanly or is lost.
+     * Transitions to WAITING_FOR_CONTROLLER (safe stop) while allowing automatic reconnection.
+     */
+    void onControllerDisconnected();
+
+    /**
      * @brief Manually triggers Emergency Stop (locks motors at 0).
      */
     void triggerEmergencyStop();

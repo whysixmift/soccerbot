@@ -4,6 +4,10 @@
 #include <string.h>
 #include <Bluepad32.h>
 
+#ifdef ARDUINO
+#include <esp_bt.h>
+#endif
+
 static const char* TAG = "BLUEPAD32";
 static Bluepad32Receiver* s_bp32_instance = nullptr;
 
@@ -39,6 +43,15 @@ bool Bluepad32Receiver::init(FailsafeManager* failsafe) {
 
     LOG_INFO(TAG, "Initializing Bluepad32 Bluetooth Gamepad Host (v%s)...", BP32.firmwareVersion());
 
+#ifdef ARDUINO
+    // Set Bluetooth Classic & BLE RF TX power to MAXIMUM (+9 dBm)
+    // Minimizes packet loss and disconnects caused by metal chassis, motors, or 2.4GHz interference
+    esp_bredr_tx_power_set(ESP_PWR_LVL_P9, ESP_PWR_LVL_P9);
+    esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_DEFAULT, ESP_PWR_LVL_P9);
+    esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_ADV, ESP_PWR_LVL_P9);
+    esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_SCAN, ESP_PWR_LVL_P9);
+#endif
+
     printLocalBdAddress();
 
     // Setup Bluepad32 connect and disconnect callbacks
@@ -50,6 +63,7 @@ bool Bluepad32Receiver::init(FailsafeManager* failsafe) {
     LOG_INFO(TAG, "Bluepad32 initialized. Put DualShock 4 into pairing mode (Hold SHARE + PS button until lightbar flashes).");
     return true;
 }
+
 
 void Bluepad32Receiver::printLocalBdAddress() const {
     const uint8_t* addr = BP32.localBdAddress();
@@ -125,9 +139,9 @@ void Bluepad32Receiver::onControllerDisconnected(ControllerPtr ctl) {
         memset(&_current_data, 0, sizeof(_current_data));
         _current_data.connected = false;
 
-        LOG_ERROR(TAG, "PRIMARY GAMEPAD DISCONNECTED! Triggering immediate failsafe shutdown.");
+        LOG_WARN(TAG, "Primary gamepad disconnected. Standing by for seamless reconnect...");
         if (_failsafe) {
-            _failsafe->triggerEmergencyStop();
+            _failsafe->onControllerDisconnected();
         }
     }
 }
@@ -154,15 +168,15 @@ void Bluepad32Receiver::processGamepadInputs(ControllerPtr ctl, uint32_t now_ms)
     _current_data.connected = true;
     _current_data.last_update_ms = now_ms;
 
-    // 1. Analog Sticks:
-    // LX: Left stick horizontal (Strafe)
-    // LY: Left stick vertical (Forward/Backward: Note that stick UP is negative in Bluepad32, so invert to make UP=+1000)
-    // RX: Right stick horizontal (Rotation)
-    // RY: Right stick vertical (Auxiliary)
-    _current_data.lx = mapBp32Axis(ctl->axisX(), INVERT_AXIS_LX);
-    _current_data.ly = mapBp32Axis(ctl->axisY(), !INVERT_AXIS_LY); // Invert so UP is forward (+1000)
-    _current_data.rx = mapBp32Axis(ctl->axisRX(), INVERT_AXIS_RX);
-    _current_data.ry = mapBp32Axis(ctl->axisRY(), false);
+    // 1. Analog Sticks (Standard cartesian coordinates: UP=+1000, RIGHT=+1000):
+    // LX: Left stick horizontal (Strafe: Left=-1000, Right=+1000)
+    // LY: Left stick vertical (Forward: Bluepad32 stick UP is negative (-511), so invert=true maps UP to +1000)
+    // RX: Right stick horizontal (Rotation: Left=-1000, Right=+1000)
+    // RY: Right stick vertical (Auxiliary: Down=-1000, Up=+1000)
+    _current_data.lx = mapBp32Axis(ctl->axisX(), false);
+    _current_data.ly = mapBp32Axis(ctl->axisY(), true);  // Invert raw Y so stick forward = +1000
+    _current_data.rx = mapBp32Axis(ctl->axisRX(), false);
+    _current_data.ry = mapBp32Axis(ctl->axisRY(), true);
 
     // 2. Triggers (0..1023 mapped to 0..255):
     int32_t raw_l2 = ctl->brake();
@@ -228,13 +242,13 @@ void Bluepad32Receiver::update(uint32_t now_ms) {
 }
 
 bool Bluepad32Receiver::getLatestInput(GamepadData* out_data) {
-    if (!_has_new_data && (!_connected_controller || !_connected_controller->isConnected())) {
+    if (!_connected_controller || !_connected_controller->isConnected() || !_current_data.connected) {
         return false;
     }
 
     if (out_data) {
         *out_data = _current_data;
     }
-    _has_new_data = false;
     return true;
 }
+
