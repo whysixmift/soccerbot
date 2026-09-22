@@ -145,15 +145,14 @@ void loop() {
     // 4. Update motor outputs
     if (s_motor_ctrl.isMotorTestRunning()) {
         s_motor_ctrl.updateMotorTest(now);
-    } else {
+    } else if (s_failsafe.isActive() && s_bp32_rx.isConnected()) {
         GamepadData data;
-        if (s_bp32_rx.getLatestInput(&data)) {
-            if (s_failsafe.isActive() && data.connected) {
-                // Compute 2-channel differential motor commands from DualShock 4 stick inputs
-                DualChannelSpeeds speeds = Kinematics::computeDualChannel(data.lx, data.ly, data.rx, s_kinematics_cfg);
-                s_motor_ctrl.setSpeeds(speeds.ch1_left, speeds.ch2_right);
-            }
+        if (s_bp32_rx.getLatestInput(&data) && data.connected) {
+            DualChannelSpeeds speeds = Kinematics::computeDualChannel(data.lx, data.ly, data.rx, s_kinematics_cfg);
+            s_motor_ctrl.setSpeeds(speeds.ch1_left, speeds.ch2_right);
         }
+    } else {
+        s_motor_ctrl.stopAll();
     }
 
     // 5. Throttled periodic telemetry output (1 Hz)
