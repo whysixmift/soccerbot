@@ -47,19 +47,19 @@ struct RobotPinConfig {
 #if defined(BOT_VARIANT_BOT_2)
     #define CURRENT_BOT_VARIANT_NAME "BOT_2"
     static const RobotPinConfig HARDWARE_PINS = {
-        // Channel 1 — LEFT (BOT 2: GPIO13 -> R_IS, GPIO14 -> L_IS)
+        // Channel 1 — LEFT (BOT 2: LPWM=GPIO26, RPWM=GPIO27, IS pins unused)
         .ch1_left = {
-            .lpwm = PIN_D26, // GPIO26 -> L_PWM
-            .rpwm = PIN_D27, // GPIO27 -> R_PWM
-            .lis  = PIN_D14, // GPIO14 -> L_IS
-            .ris  = PIN_D13  // GPIO13 -> R_IS
+            .lpwm = PIN_D26, // GPIO26 -> LPWM
+            .rpwm = PIN_D27, // GPIO27 -> RPWM
+            .lis  = -1,      // Not connected
+            .ris  = -1       // Not connected
         },
-        // Channel 2 — RIGHT (BOT 2: GPIO4 -> R_IS, GPIO16 -> L_IS)
+        // Channel 2 — RIGHT (BOT 2: LPWM=GPIO18, RPWM=GPIO17, IS pins unused)
         .ch2_right = {
             .lpwm = PIN_D18, // GPIO18 -> LPWM
-            .rpwm = PIN_TX2, // GPIO17 -> RPWM (TX2 pin used as GPIO)
-            .lis  = PIN_RX2, // GPIO16 -> L_IS (RX2 pin used as GPIO)
-            .ris  = PIN_D4   // GPIO4  -> R_IS
+            .rpwm = PIN_TX2, // GPIO17 -> RPWM (TX2 pin used as ordinary GPIO)
+            .lis  = -1,      // Not connected
+            .ris  = -1       // Not connected
         }
     };
 #else
