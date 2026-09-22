@@ -44,9 +44,11 @@ bool Bluepad32Receiver::init(FailsafeManager* failsafe) {
     LOG_INFO(TAG, "Initializing Bluepad32 Bluetooth Gamepad Host (v%s)...", BP32.firmwareVersion());
 
 #ifdef ARDUINO
-    // Set Bluetooth Classic & BLE RF TX power to MAXIMUM (+9 dBm)
+    // Set Bluetooth RF TX power to MAXIMUM (+9 dBm)
     // Minimizes packet loss and disconnects caused by metal chassis, motors, or 2.4GHz interference
+#if defined(SOC_BT_CLASSIC_SUPPORTED) && SOC_BT_CLASSIC_SUPPORTED
     esp_bredr_tx_power_set(ESP_PWR_LVL_P9, ESP_PWR_LVL_P9);
+#endif
     esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_DEFAULT, ESP_PWR_LVL_P9);
     esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_ADV, ESP_PWR_LVL_P9);
     esp_ble_tx_power_set(ESP_BLE_PWR_TYPE_SCAN, ESP_PWR_LVL_P9);

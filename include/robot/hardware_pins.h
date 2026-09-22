@@ -44,7 +44,25 @@ struct RobotPinConfig {
 };
 
 // Define variant configurations
-#if defined(BOT_VARIANT_BOT_2)
+#if defined(BOT_VARIANT_C3_SUPERMINI)
+    #define CURRENT_BOT_VARIANT_NAME "C3_SUPERMINI"
+    static const RobotPinConfig HARDWARE_PINS = {
+        // Channel 1 — LEFT (C3 SuperMini: LPWM=GPIO0, RPWM=GPIO1)
+        .ch1_left = {
+            .lpwm = 0,   // GPIO0 -> LPWM
+            .rpwm = 1,   // GPIO1 -> RPWM
+            .lis  = -1,  // Not connected
+            .ris  = -1   // Not connected
+        },
+        // Channel 2 — RIGHT (C3 SuperMini: LPWM=GPIO3, RPWM=GPIO4)
+        .ch2_right = {
+            .lpwm = 3,   // GPIO3 -> LPWM
+            .rpwm = 4,   // GPIO4 -> RPWM
+            .lis  = -1,  // Not connected
+            .ris  = -1   // Not connected
+        }
+    };
+#elif defined(BOT_VARIANT_BOT_2)
     #define CURRENT_BOT_VARIANT_NAME "BOT_2"
     static const RobotPinConfig HARDWARE_PINS = {
         // Channel 1 — LEFT (BOT 2: LPWM=GPIO26, RPWM=GPIO27, IS pins unused)

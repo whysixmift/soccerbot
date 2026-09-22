@@ -5,6 +5,18 @@
 #include <stdbool.h>
 #include "config_common.h"
 
+struct GamepadData {
+    int16_t  lx;              // Normalized Strafe (-1000..+1000)
+    int16_t  ly;              // Normalized Forward/Back (-1000..+1000)
+    int16_t  rx;              // Normalized Rotation (-1000..+1000)
+    int16_t  ry;              // Normalized Auxiliary (-1000..+1000)
+    uint16_t buttons;         // Button state bitmask
+    uint8_t  kick;            // Kick power (0..255)
+    uint8_t  dribble;         // Dribbler speed (0..255)
+    bool     connected;       // True if controller is actively connected
+    uint32_t last_update_ms;  // Timestamp of latest controller packet
+};
+
 #pragma pack(push, 1)
 /**
  * @brief Compact binary robot control command packet for ESP-NOW unicast transmission.
