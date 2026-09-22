@@ -80,7 +80,15 @@ DualChannelSpeeds Kinematics::computeDualChannel(int16_t lx,
     int32_t vy = config.invert_ly ? -ly : ly;
     int32_t omega = config.invert_rx ? -turn_input : turn_input;
 
-    // 3. Compute 2-channel differential drive:
+    // 3. Apply speed scaling
+    if (config.linear_scale > 0 && config.linear_scale <= 1000) {
+        vy = (vy * config.linear_scale) / 1000;
+    }
+    if (config.turn_scale > 0 && config.turn_scale <= 1000) {
+        omega = (omega * config.turn_scale) / 1000;
+    }
+
+    // 4. Compute 2-channel differential drive:
     // Left channel  = vy + omega
     // Right channel = vy - omega
     int32_t raw_left  = vy + omega;

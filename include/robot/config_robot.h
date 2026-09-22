@@ -38,9 +38,13 @@
 // Kinematics and Joystick Deadzones
 #define JOYSTICK_DEADZONE       120     // 12% deadzone (120 / 1000) prevents stick drift
 
+// Speed and Sensitivity Scaling (0 to 1000 range)
+#define LINEAR_SPEED_SCALE      600     // 60% max forward/backward speed (smooth, controllable drive)
+#define TURN_SPEED_SCALE        450     // 45% max rotation speed (eliminates wild spinning)
+
 // Axis Inversions (calibrate according to stick polarities)
 #define INVERT_AXIS_LX          false   // Invert strafe axis (Left Stick X)
-#define INVERT_AXIS_LY          false   // Invert forward/back axis (Left Stick Y)
+#define INVERT_AXIS_LY          true    // Invert forward/back axis (Left Stick Y: stick forward = robot forward)
 #define INVERT_AXIS_RX          false   // Invert rotation axis (Right Stick X)
 
 // Motor Channel Inversions (Physical orientation calibration)

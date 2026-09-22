@@ -64,16 +64,18 @@ void test_kinematics() {
     printf("\n--- Running Kinematics Tests ---\n");
 
     KinematicsConfig cfg;
-    cfg.deadzone   = 80; // 8%
-    cfg.invert_lx  = false;
-    cfg.invert_ly  = false;
-    cfg.invert_rx  = false;
-    cfg.invert_fl  = false;
-    cfg.invert_fr  = false;
-    cfg.invert_rl  = false;
-    cfg.invert_rr  = false;
-    cfg.invert_ch1 = false;
-    cfg.invert_ch2 = false;
+    cfg.deadzone     = 80; // 8%
+    cfg.linear_scale = 1000;
+    cfg.turn_scale   = 1000;
+    cfg.invert_lx    = false;
+    cfg.invert_ly    = false;
+    cfg.invert_rx    = false;
+    cfg.invert_fl    = false;
+    cfg.invert_fr    = false;
+    cfg.invert_rl    = false;
+    cfg.invert_rr    = false;
+    cfg.invert_ch1   = false;
+    cfg.invert_ch2   = false;
 
     // 1. Pure Forward Motion (LY = +1000, LX = 0, RX = 0)
     MecanumWheelSpeeds m_fwd = Kinematics::computeMecanum(0, 1000, 0, cfg);

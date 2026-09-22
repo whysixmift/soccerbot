@@ -4,7 +4,9 @@
 #include <stdbool.h>
 
 struct KinematicsConfig {
-    int16_t deadzone;     // Deadzone threshold (e.g. 80 for 8% on -1000..+1000 scale)
+    int16_t deadzone;     // Deadzone threshold (e.g. 120 for 12% on -1000..+1000 scale)
+    int16_t linear_scale; // Max linear speed scale (e.g. 600 for 60%)
+    int16_t turn_scale;   // Max rotation speed scale (e.g. 450 for 45%)
     bool invert_lx;       // Invert strafe (LX)
     bool invert_ly;       // Invert forward/back (LY)
     bool invert_rx;       // Invert rotation (RX)

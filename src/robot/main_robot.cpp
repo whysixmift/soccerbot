@@ -96,16 +96,18 @@ void setup() {
     printBanner();
 
     // 2. Initialize Kinematics configuration
-    s_kinematics_cfg.deadzone   = JOYSTICK_DEADZONE;
-    s_kinematics_cfg.invert_lx  = INVERT_AXIS_LX;
-    s_kinematics_cfg.invert_ly  = INVERT_AXIS_LY;
-    s_kinematics_cfg.invert_rx  = INVERT_AXIS_RX;
-    s_kinematics_cfg.invert_fl  = INVERT_WHEEL_FL;
-    s_kinematics_cfg.invert_fr  = INVERT_WHEEL_FR;
-    s_kinematics_cfg.invert_rl  = INVERT_WHEEL_RL;
-    s_kinematics_cfg.invert_rr  = INVERT_WHEEL_RR;
-    s_kinematics_cfg.invert_ch1 = false;
-    s_kinematics_cfg.invert_ch2 = false;
+    s_kinematics_cfg.deadzone     = JOYSTICK_DEADZONE;
+    s_kinematics_cfg.linear_scale = LINEAR_SPEED_SCALE;
+    s_kinematics_cfg.turn_scale   = TURN_SPEED_SCALE;
+    s_kinematics_cfg.invert_lx    = INVERT_AXIS_LX;
+    s_kinematics_cfg.invert_ly    = INVERT_AXIS_LY;
+    s_kinematics_cfg.invert_rx    = INVERT_AXIS_RX;
+    s_kinematics_cfg.invert_fl    = INVERT_WHEEL_FL;
+    s_kinematics_cfg.invert_fr    = INVERT_WHEEL_FR;
+    s_kinematics_cfg.invert_rl    = INVERT_WHEEL_RL;
+    s_kinematics_cfg.invert_rr    = INVERT_WHEEL_RR;
+    s_kinematics_cfg.invert_ch1   = false;
+    s_kinematics_cfg.invert_ch2   = false;
 
     // 3. Initialize Motor Controller (Guaranteed safe 0 RPM boot & hardware polarity alignment)
     bool motor_ok = s_motor_ctrl.init(HARDWARE_PINS,
