@@ -20,11 +20,12 @@ static FailsafeManager    s_failsafe;
 static Bluepad32Receiver  s_rx;
 static KinematicsConfig   s_kinematics_cfg;
 
-#if defined(BOT_VARIANT_C3_SUPERMINI)
+#if defined(CONFIG_IDF_TARGET_ESP32C3) || defined(BOT_VARIANT_BOT_2) || defined(BOT_VARIANT_C3_SUPERMINI)
 #define RECEIVER_TYPE_NAME "Bluetooth BLE Gamepad Host (Bluepad32 BLE)"
 #else
 #define RECEIVER_TYPE_NAME "Bluetooth Classic Gamepad Host (DualShock 4)"
 #endif
+
 
 // Periodic telemetry timer
 static uint32_t s_last_telemetry_time = 0;
