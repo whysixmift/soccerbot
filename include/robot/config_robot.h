@@ -41,15 +41,16 @@
 #define MOTOR_ACCEL_RAMP_RATE   2000    // Smooth acceleration (0 to 380 in ~190ms)
 #define MOTOR_DECEL_RAMP_RATE   3000    // Responsive braking (380 to 0 in ~125ms)
 
-// Kinematics and Joystick Deadzones (Tuned for ultra-fast, zero-latency response)
-#define JOYSTICK_DEADZONE       60      // 6% deadzone: immediate stick engagement without drift
-#define JOYSTICK_EXPO_PERCENT   0       // 0% expo: direct 1:1 instantaneous linear response (zero lag)
+// Kinematics and Joystick Deadzones (Tuned for responsive, smooth micro-control)
+#define JOYSTICK_DEADZONE       60      // 6% deadzone: suppresses stick drift at center
+#define JOYSTICK_EXPO_PERCENT   25      // 25% exponential curve: gentle micro-aiming near center
 
 // Speed and Sensitivity Scaling (0 to 1000 range)
 #define LINEAR_SPEED_SCALE      400     // 40% standard cruising speed
-#define TURN_SPEED_SCALE        320     // 32% crisp turning speed
+#define TURN_SPEED_SCALE        200     // 20% smooth turning speed (tidak terlalu sensitif / anti-twitch)
 #define BOOST_LINEAR_SPEED_SCALE 1000   // 100% full power when R2 / Boost is pulled
-#define BOOST_TURN_SPEED_SCALE   600    // 60% high-speed turning in Boost mode
+#define BOOST_TURN_SPEED_SCALE   450    // 45% max turning speed in Boost mode
+
 
 // Axis Inversions (Standard reference frame: Stick UP = +1000, Stick RIGHT = +1000)
 #define INVERT_AXIS_LX          false   // Left Stick X (Strafe)

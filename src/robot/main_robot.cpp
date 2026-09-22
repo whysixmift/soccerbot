@@ -167,19 +167,20 @@ void loop() {
         if (s_rx.getLatestInput(&data) && data.connected) {
             // Full power boost via R2 trigger (analog throttle 0..255) or Square button
             if (data.kick > 10) {
-                // Progressive full throttle boost on R2 squeeze up to 1000 (100% full power)
+                // Progressive full throttle boost on R2 squeeze up to BOOST_LINEAR_SPEED_SCALE
                 int32_t r2_factor = (int32_t)data.kick;
-                s_kinematics_cfg.linear_scale = (int16_t)(LINEAR_SPEED_SCALE + ((1000 - LINEAR_SPEED_SCALE) * r2_factor) / 255);
-                s_kinematics_cfg.turn_scale   = (int16_t)(TURN_SPEED_SCALE + ((600 - TURN_SPEED_SCALE) * r2_factor) / 255);
+                s_kinematics_cfg.linear_scale = (int16_t)(LINEAR_SPEED_SCALE + ((BOOST_LINEAR_SPEED_SCALE - LINEAR_SPEED_SCALE) * r2_factor) / 255);
+                s_kinematics_cfg.turn_scale   = (int16_t)(TURN_SPEED_SCALE + ((BOOST_TURN_SPEED_SCALE - TURN_SPEED_SCALE) * r2_factor) / 255);
             } else if (data.buttons & BTN_BOOST_MODE) {
-                // Instant 100% full power boost on Square/Triangle button
-                s_kinematics_cfg.linear_scale = 1000;
-                s_kinematics_cfg.turn_scale   = 600;
+                // Instant full power boost on Square/Triangle button
+                s_kinematics_cfg.linear_scale = BOOST_LINEAR_SPEED_SCALE;
+                s_kinematics_cfg.turn_scale   = BOOST_TURN_SPEED_SCALE;
             } else {
                 // Standard smooth cruising speed
                 s_kinematics_cfg.linear_scale = LINEAR_SPEED_SCALE;
                 s_kinematics_cfg.turn_scale   = TURN_SPEED_SCALE;
             }
+
 
             DualChannelSpeeds speeds = Kinematics::computeDualChannel(data.lx, data.ly, data.rx, s_kinematics_cfg);
             s_motor_ctrl.setSpeeds(speeds.ch1_left, speeds.ch2_right);
