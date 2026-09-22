@@ -1,0 +1,10 @@
+.pio
+.vscode
+.idea
+*.o
+*.a
+*.bin
+*.elf
+*.hex
+test_runner
+.DS_Store
