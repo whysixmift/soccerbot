@@ -38,24 +38,24 @@
 
 // Acceleration & Deceleration Slew Rate Limiter (Speed units per second)
 // Eliminates jerky movements ("kaku"), wheel slip, and inductive back-EMF spikes
-#define MOTOR_ACCEL_RAMP_RATE   2000    // Smooth acceleration (0 to 380 in ~190ms)
-#define MOTOR_DECEL_RAMP_RATE   3000    // Responsive braking (380 to 0 in ~125ms)
+#define MOTOR_ACCEL_RAMP_RATE   1000    // Smooth acceleration (0 to 280 in ~280ms)
+#define MOTOR_DECEL_RAMP_RATE   1600    // Smooth braking (280 to 0 in ~175ms)
 
 // Kinematics and Joystick Deadzones (Tuned for responsive, smooth micro-control)
-#define JOYSTICK_DEADZONE       60      // 6% deadzone: suppresses stick drift at center
-#define JOYSTICK_EXPO_PERCENT   25      // 25% exponential curve: gentle micro-aiming near center
+#define JOYSTICK_DEADZONE       70      // 7% deadzone: suppresses stick drift at center
+#define JOYSTICK_EXPO_PERCENT   40      // 40% exponential curve: gentle micro-aiming near center
 
 // Speed and Sensitivity Scaling (0 to 1000 range)
-#define LINEAR_SPEED_SCALE      400     // 40% standard cruising speed
-#define TURN_SPEED_SCALE        200     // 20% smooth turning speed (tidak terlalu sensitif / anti-twitch)
-#define BOOST_LINEAR_SPEED_SCALE 1000   // 100% full power when R2 / Boost is pulled
-#define BOOST_TURN_SPEED_SCALE   450    // 45% max turning speed in Boost mode
+#define LINEAR_SPEED_SCALE      280     // 28% cruising speed: controllable and smooth for soccer bot
+#define TURN_SPEED_SCALE        150     // 15% smooth turning speed: gentle, anti-twitch
+#define BOOST_LINEAR_SPEED_SCALE 650    // 65% power when R2 / Boost is pulled
+#define BOOST_TURN_SPEED_SCALE   300    // 30% max turning speed in Boost mode
 
 
 // Axis Inversions (Standard reference frame: Stick UP = +1000, Stick RIGHT = +1000)
-#define INVERT_AXIS_LX          false   // Left Stick X (Strafe)
-#define INVERT_AXIS_LY          false   // Left Stick Y (Forward/Backward)
-#define INVERT_AXIS_RX          false   // Right Stick X (Rotation)
+#define INVERT_AXIS_LX          true    // Invert Left Stick X
+#define INVERT_AXIS_LY          true    // Invert Left Stick Y (stick forward = robot forward)
+#define INVERT_AXIS_RX          true    // Invert Right Stick X (stick right = turn right)
 
 // Motor Channel Inversions (Physical orientation calibration)
 // In a 2-wheel differential chassis, motors face opposite directions.

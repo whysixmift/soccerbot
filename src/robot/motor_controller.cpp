@@ -91,27 +91,41 @@ void MotorController::setMotor(MotorId motor, int16_t speed) {
     int16_t clamped = clamp_speed(speed, _max_speed_limit);
 
     if (motor == MOTOR_ID_CH1_LEFT) {
-        _current_ch1 = clamped;
-        _ch1.setSpeed(clamped);
+        _target_ch1 = clamped;
     } else if (motor == MOTOR_ID_CH2_RIGHT) {
-        _current_ch2 = clamped;
-        _ch2.setSpeed(clamped);
+        _target_ch2 = clamped;
     }
 }
 
 void MotorController::setSpeeds(int16_t ch1_speed, int16_t ch2_speed) {
     if (_test_running) return;
 
-    _current_ch1 = clamp_speed(ch1_speed, _max_speed_limit);
-    _current_ch2 = clamp_speed(ch2_speed, _max_speed_limit);
-    _ch1.setSpeed(_current_ch1);
-    _ch2.setSpeed(_current_ch2);
+    _target_ch1 = clamp_speed(ch1_speed, _max_speed_limit);
+    _target_ch2 = clamp_speed(ch2_speed, _max_speed_limit);
 }
 
 void MotorController::update(uint32_t now_ms) {
     if (_test_running) {
         updateMotorTest(now_ms);
+        return;
     }
+
+    if (_last_update_ms == 0) {
+        _last_update_ms = now_ms;
+        return;
+    }
+
+    uint32_t dt_ms = now_ms - _last_update_ms;
+    if (dt_ms == 0) return;
+    if (dt_ms > 100) dt_ms = 100;
+
+    _last_update_ms = now_ms;
+
+    _current_ch1 = rampValue(_current_ch1, _target_ch1, dt_ms);
+    _current_ch2 = rampValue(_current_ch2, _target_ch2, dt_ms);
+
+    _ch1.setSpeed(_current_ch1);
+    _ch2.setSpeed(_current_ch2);
 }
 
 void MotorController::stopAll() {
@@ -119,6 +133,7 @@ void MotorController::stopAll() {
     _target_ch2 = 0;
     _current_ch1 = 0;
     _current_ch2 = 0;
+    _last_update_ms = 0;
     _ch1.stop();
     _ch2.stop();
 }

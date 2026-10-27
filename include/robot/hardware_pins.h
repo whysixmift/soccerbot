@@ -18,8 +18,9 @@
 
 #define PIN_D13   13
 #define PIN_D14   14
-#define PIN_D27   27
+#define PIN_D25   25
 #define PIN_D26   26
+#define PIN_D27   27
 #define PIN_D4    4
 #define PIN_RX2   16  // GPIO16 - NEVER use for UART2
 #define PIN_TX2   17  // GPIO17 - NEVER use for UART2
@@ -44,8 +45,8 @@ struct RobotPinConfig {
 };
 
 // Define variant configurations
-#if defined(BOT_VARIANT_BOT_2) || defined(BOT_VARIANT_C3_SUPERMINI)
-    #define CURRENT_BOT_VARIANT_NAME "BOT_2 (ESP32-C3 SuperMini)"
+#if defined(BOT_VARIANT_C3_SUPERMINI)
+    #define CURRENT_BOT_VARIANT_NAME "C3_SUPERMINI"
     static const RobotPinConfig HARDWARE_PINS = {
         // Channel 1 — LEFT (C3 SuperMini: LPWM=GPIO0, RPWM=GPIO1)
         .ch1_left = {
@@ -63,23 +64,29 @@ struct RobotPinConfig {
         }
     };
 #else
+    // Authoritative hardware mapping:
+    // Motor kiri:  RPWM = GPIO13, LPWM = GPIO14
+    // Motor kanan: RPWM = GPIO25, LPWM = GPIO26
+    #if defined(BOT_VARIANT_BOT_2)
+        #define CURRENT_BOT_VARIANT_NAME "BOT_2"
+    #else
+        #define CURRENT_BOT_VARIANT_NAME "BOT_1"
+    #endif
 
-    // Default to BOT_1
-    #define CURRENT_BOT_VARIANT_NAME "BOT_1"
     static const RobotPinConfig HARDWARE_PINS = {
-        // Channel 1 — LEFT (BOT 1: GPIO13 -> L_IS, GPIO14 -> R_IS)
+        // Channel 1 — LEFT (BTS7960: LPWM = GPIO14, RPWM = GPIO13)
         .ch1_left = {
-            .lpwm = PIN_D26, // GPIO26 -> L_PWM
-            .rpwm = PIN_D27, // GPIO27 -> R_PWM
-            .lis  = PIN_D13, // GPIO13 -> L_IS
-            .ris  = PIN_D14  // GPIO14 -> R_IS
+            .lpwm = PIN_D14, // GPIO14 -> LPWM
+            .rpwm = PIN_D13, // GPIO13 -> RPWM
+            .lis  = -1,      // Not connected
+            .ris  = -1       // Not connected
         },
-        // Channel 2 — RIGHT (BOT 1: GPIO4 -> L_IS, GPIO16 -> R_IS)
+        // Channel 2 — RIGHT (BTS7960: LPWM = GPIO26, RPWM = GPIO25)
         .ch2_right = {
-            .lpwm = PIN_D18, // GPIO18 -> LPWM
-            .rpwm = PIN_TX2, // GPIO17 -> RPWM (TX2 pin used as GPIO)
-            .lis  = PIN_D4,  // GPIO4  -> L_IS
-            .ris  = PIN_RX2  // GPIO16 -> R_IS (RX2 pin used as GPIO)
+            .lpwm = PIN_D26, // GPIO26 -> LPWM
+            .rpwm = PIN_D25, // GPIO25 -> RPWM
+            .lis  = -1,      // Not connected
+            .ris  = -1       // Not connected
         }
     };
 #endif
